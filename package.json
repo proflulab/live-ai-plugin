@@ -26,6 +26,13 @@
   "manifest": {
     "host_permissions": [
       "https://*/*"
-    ]
+    ],
+    "permissions": [
+      "tabs",
+      "windows"
+    ],
+    "action": {
+      "default_title": "Live AI Assistant"
+    }
   }
 }

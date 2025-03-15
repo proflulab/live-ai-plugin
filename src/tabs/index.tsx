@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-function IndexPopup() {
+function IndexPage() {
   const [data, setData] = useState("")
 
   return (
@@ -23,4 +23,4 @@ function IndexPopup() {
   )
 }
 
-export default IndexPopup
+export default IndexPage
