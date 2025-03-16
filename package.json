@@ -28,7 +28,13 @@
       "https://*/*"
     ],
     "manifest_version": 3,
-    "permissions": ["sidePanel"],
+    "permissions": ["sidePanel", "activeTab"],
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["~/content.tsx"]
+      }
+    ],
     "side_panel": {
       "default_path": "sidepanel.html"
     },
