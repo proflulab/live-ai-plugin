@@ -28,7 +28,11 @@
       "https://*/*"
     ],
     "manifest_version": 3,
-    "permissions": ["sidePanel", "activeTab"],
+    "permissions": [
+      "sidePanel", 
+      "activeTab",
+      "windows"
+    ],
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
