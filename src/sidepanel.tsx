@@ -3,15 +3,20 @@ import { useEffect } from "react";
 export default function SidePanel() {
   // 使用 useEffect 钩子在组件挂载时设置消息监听器
   useEffect(() => {
-    // 添加 Chrome 扩展消息监听器，用于接收来自 background.ts 的消息
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      // 通过发送信息到侧边栏，检测侧边栏状态
-      // 如果是关闭状态，它将会无响应，如果是开启状态，它就会返回true
+    // 定义消息处理函数
+    const handleMessage = (message, sender, sendResponse) => {
+      // 当收到 "CHECK_SIDEPANEL_LOADED" 消息时，返回 true，表示侧边栏已加载
       if (message.type === "CHECK_SIDEPANEL_LOADED") {
-        sendResponse(true); // 只要能收到响应，就说明侧边栏已加载
+        sendResponse(true);
         return true; // 保持消息通道开启
       }
-    });
+    };
+    
+    // 添加消息监听器，监听来自 background.ts 的消息
+    chrome.runtime.onMessage.addListener(handleMessage);
+
+    // 组件卸载时，移除监听器，防止重复绑定
+    return () => chrome.runtime.onMessage.removeListener(handleMessage);
   }, []);
 
   return (
@@ -22,4 +27,4 @@ export default function SidePanel() {
       </button>
     </div>
   )
-  }
+}
