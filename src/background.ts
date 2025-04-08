@@ -143,3 +143,28 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 chrome.sidePanel
   .setPanelBehavior({ openPanelOnActionClick: true })
   .catch((error) => console.error(error))
+
+
+
+let isRunning = false; // 客服运行状态，初始状态为 false
+let intervalId: NodeJS.Timeout | null = null; // 定时器的 ID 初始化
+
+// Handle running state toggle
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "TOGGLE_RUNNING_STATE") {
+    isRunning = !isRunning;
+    console.log(`Customer service running state: ${isRunning}`);
+
+    if (isRunning) {
+      // 启动定时器 interval
+      intervalId = setInterval(() => {
+        console.log("it is running");
+        
+      }, 5000);
+    } else if (intervalId) {
+      // 停止定时器
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  }
+});

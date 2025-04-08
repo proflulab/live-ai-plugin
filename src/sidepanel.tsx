@@ -127,6 +127,8 @@ export default function SidePanel() {
 
           onClick={() => {
             console.log("Start button clicked");
+            // 发送消息给 background.ts 以切换 获取直播间信息 运行状态(开始或者停止)
+            chrome.runtime.sendMessage({ type: "TOGGLE_RUNNING_STATE" });
           }}
         >
           START
