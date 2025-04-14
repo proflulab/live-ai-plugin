@@ -30,6 +30,7 @@
     "manifest_version": 3,
     "permissions": [
       "sidePanel", 
+      "scripting",
       "activeTab",
       "windows"
     ],
