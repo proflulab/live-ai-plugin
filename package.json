@@ -10,9 +10,11 @@
     "package": "plasmo package"
   },
   "dependencies": {
+    "dexie": "^4.0.11",
     "plasmo": "0.90.3",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "4.1.1",
@@ -29,15 +31,20 @@
     ],
     "manifest_version": 3,
     "permissions": [
-      "sidePanel", 
+      "sidePanel",
       "scripting",
       "activeTab",
-      "windows"
+      "windows",
+      "storage"
     ],
     "content_scripts": [
       {
-        "matches": ["<all_urls>"],
-        "js": ["~/content.tsx"]
+        "matches": [
+          "<all_urls>"
+        ],
+        "js": [
+          "~/content.tsx"
+        ]
       }
     ],
     "side_panel": {

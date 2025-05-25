@@ -1,3 +1,6 @@
+import { commentDB } from '../services/commentDB'
+import { v4 as uuidv4 } from 'uuid'
+
 interface CommentResult {
     type: string;
     username: string;
@@ -130,6 +133,18 @@ interface CommentResult {
                 // 更新计数器
                 this.currentCommentCount = result.newCount || 0; // 更新当前评论总数
                 this.targetCommentCount += 1; // 目标评论总数 +1
+
+                // 储存评论到数据库
+                commentDB.addComment({
+                  userId: uuidv4(),
+                  userName: comment.username,
+                  userType: comment.type,
+                  timestamp: Date.now(),
+                  commentTime: new Date().toLocaleString(),
+                  content: comment.content,
+                  reply: ''
+                })
+
               }
             }
           });
