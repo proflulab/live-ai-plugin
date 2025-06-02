@@ -35,11 +35,11 @@ interface CommentResult {
   
           // 如果没有找到直播页面，返回
           if (!liveTab) {
-            console.log('未找到微信视频号直播页面');
+            console.log('Customer service ：未找到微信视频号直播页面');
             return;
           }
   
-          console.log("找到直播页面，继续执行其他操作");
+          console.log("Customer service ：找到直播页面，继续执行其他操作");
           // 这里可以继续添加其他操作
   
           // 在页面中执行脚本获取评论数量和内容
@@ -105,7 +105,7 @@ interface CommentResult {
   
                   console.log('获取到的评论信息:', commentInfo);
                   resolve({ commentInfo, newCount: current });
-                }, 2000);
+                }, );
               });
             },
             args: [this.currentCommentCount, this.targetCommentCount],  // 传入计数器变量
@@ -148,10 +148,29 @@ interface CommentResult {
               }
             }
           });
+
+
+          // (async () => {
+          //   await new Promise(resolve => setTimeout(resolve, 10000));
+          //   console.log("1212121212");
+          // })();
+
+          // private canPrint = true; // 标志变量，用于控制打印
+
+          // // 使用标志控制打印
+          // if (this.canPrint) {
+          //   console.log("SyncToFeishu service is running");
+          //   this.canPrint = false;
+          //   setTimeout(() => {
+          //     this.canPrint = true;
+          //   }, 5000);
+          // }
+
+
   
-          console.log("it is running");
+          console.log("CommentController service is running");
   
-        }, 5000);
+        }, 1000);
       } else if (this.intervalId) {
         // 停止定时器
         clearInterval(this.intervalId);
