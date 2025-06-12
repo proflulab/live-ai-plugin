@@ -10,14 +10,15 @@ interface CommentResult {
   interface ScriptResult {
     initialCount?: number;
     commentInfo?: CommentResult;
-    newCount?: number;
+    newCurren?: number;
+    newTarget?: number;
   }
   
   export class CommentController {
     private isRunning: boolean = false;
     private intervalId: NodeJS.Timeout | null = null;
-    private currentCommentCount: number = 0;
-    private targetCommentCount: number = 0;
+    private currentCommentCount: number = 0; // 时刻更新的总项目数
+    private targetCommentCount: number = 0; // 程序推进到的存储的数量
   
     public toggleRunningState() {
       this.isRunning = !this.isRunning;
@@ -77,24 +78,43 @@ interface CommentResult {
                     console.log('未找到评论项');
                     return resolve(null);
                   }
-  
+
+                  // 获取最后一个 itemView ，目的是获取真实的总评论数量
+                  const lastView = itemViews[itemViews.length - 1];
+                  const dataIndex = lastView.firstElementChild?.getAttribute('data-index');
+                  //console.log('data-index:', dataIndex);
+
+
                   // 首次运行时初始化计数
                   if (current === 0) {
-                    console.log('初始化评论数量');
-                    return resolve({ initialCount: itemViews.length }); // 返回初始化计数
+                    console.log('初始化评论项目数');
+                    return resolve({ initialCount: Number(dataIndex) }); // 返回初始化计数
                   }
-  
-                  current = itemViews.length; // 设置最新的评论数量
-                  console.log('当前评论数量:', current);
+                  
+                  current = Number(dataIndex); // 设置最新的评论数量
+                  console.log('最新评论项目数:', current);
+                  console.log("已存储到的项目数", target)
+                  // console.log('当前评论总数:', itemViews.length);
   
                   // 检查是否有新评论
                   if (current === target) {
                     console.log('没有新评论');
                     return resolve(null);
                   }
-  
+
+                  // 获取目标评论总数 +1
+                  target += 1
+
+                  // 搜索 data-index 为 4 的项
+                  const targetComment = Array.from(itemViews).find(view => view.firstElementChild?.getAttribute('data-index') === String(target));
+                  if (!targetComment) {
+                    console.log('未找到符合 data-index 的项');
+                    return resolve(null);
+                  }
+
+
                   // 获取最新的一条评论
-                  const targetComment = itemViews[target];
+                  // const targetComment = itemViews[target];
   
                   // 获取评论详细信息
                   const commentInfo: CommentResult = {
@@ -104,7 +124,7 @@ interface CommentResult {
                   };
   
                   console.log('获取到的评论信息:', commentInfo);
-                  resolve({ commentInfo, newCount: current });
+                  resolve({ commentInfo, newCurren: current, newTarget: target });
                 }, );
               });
             },
@@ -131,8 +151,8 @@ interface CommentResult {
                 console.log('评论内容:', comment.content);
   
                 // 更新计数器
-                this.currentCommentCount = result.newCount || 0; // 更新当前评论总数
-                this.targetCommentCount += 1; // 目标评论总数 +1
+                this.currentCommentCount = result.newCurren ; // 更新当前评论总数
+                this.targetCommentCount = result.newTarget ; // 目标评论总数 +1
 
                 // 储存评论到数据库
                 commentDB.addComment({
@@ -170,7 +190,7 @@ interface CommentResult {
   
           console.log("CommentController service is running");
   
-        }, 1000);
+        }, 5000);
       } else if (this.intervalId) {
         // 停止定时器
         clearInterval(this.intervalId);
