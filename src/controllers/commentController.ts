@@ -9,7 +9,7 @@ interface CommentResult {
   
   interface ScriptResult {
     initialCount?: number;
-    commentInfo?: CommentResult;
+    commentInfo?: CommentResult[];
     newCurren?: number;
     newTarget?: number;
   }
@@ -102,30 +102,6 @@ interface CommentResult {
                     return resolve(null);
                   }
 
-                  // // 获取目标评论总数 +1
-                  // target += 1
-
-                  // // 搜索 data-index 为 4 的项
-                  // const targetComment = Array.from(itemViews).find(view => view.firstElementChild?.getAttribute('data-index') === String(target));
-                  // if (!targetComment) {
-                  //   console.log('未找到符合 data-index 的项');
-                  //   return resolve(null);
-                  // }
-
-
-                  // // 获取最新的一条评论
-                  // // const targetComment = itemViews[target];
-  
-                  // // 获取评论详细信息
-                  // const commentInfo: CommentResult = {
-                  //   type: targetComment.querySelector('.message-type')?.textContent || '',
-                  //   username: targetComment.querySelector('.message-username-desc')?.textContent || '',
-                  //   content: targetComment.querySelector('.message-content')?.textContent || ''
-                  // };
-  
-                  // console.log('获取到的评论信息:', commentInfo);
-                  // resolve({ commentInfo, newCurren: current, newTarget: target });
-
                   // 遍历所有的 itemViews
                   const commentInfo = Array.from(itemViews).map(view => {
                     // 获取每个视图的 data-index 属性
@@ -144,20 +120,19 @@ interface CommentResult {
                     return null;
                   }).filter(comment => comment !== null); // 过滤掉所有 null 值
 
-                  // 检查是否有新评论
+                  // 检查是否有新评论，如果没有说明有问题
                   if (commentInfo.length === 0) {
                     console.log('返回评论值报错：没有返回值，但程序已经过了开始的检测新评论');
                     return resolve(null);
                   }
 
-                  //target = current
-
-                  console.log("target更新整体",target + commentInfo.length)
+                  // 更新保存到的评论数量
+                  target += commentInfo.length
 
                   // 输出获取到的评论信息
                   console.log('获取到的评论信息:', commentInfo);
                   // 解析并返回评论信息和更新后的目标值
-                  resolve({ commentInfo, newCurren: current, newTarget: target + commentInfo.length });
+                  resolve({ commentInfo, newCurren: current, newTarget: target });
 
                 }, );
               });
@@ -179,15 +154,12 @@ interface CommentResult {
   
               // 处理新评论
               if (result.commentInfo) {
-                const comment = result.commentInfo as CommentResult;
-                console.log('评论类型:', comment.type);
-                console.log('用户名:', comment.username);
-                console.log('评论内容:', comment.content);
+                const comment = result.commentInfo as CommentResult[];
+                console.log("获取到的评论信息:", comment)
   
                 // 更新计数器
                 this.currentCommentCount = result.newCurren ; // 更新当前评论总数
                 this.targetCommentCount = result.newTarget ; // 目标评论总数
-                console.log("目标评论总数", this.targetCommentCount)
 
                 // // 储存评论到数据库
                 // commentDB.addComment({
@@ -200,6 +172,20 @@ interface CommentResult {
                 //   reply: ''
                 // })
 
+                // 将 commentInfo 列表中每一行评论详细信息储存到数据库
+                result.commentInfo.forEach(comment => {
+                  commentDB.addComment({
+                    userId: uuidv4(),
+                    userName: comment.username,
+                    userType: comment.type,
+                    timestamp: Date.now(),
+                    commentTime: new Date().toLocaleString(),
+                    content: comment.content,
+                    reply: ''
+                  });
+                });
+
+  
               }
             }
           });
