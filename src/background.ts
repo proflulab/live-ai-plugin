@@ -24,3 +24,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     syncToFeishu.syncRunningStateToFeishu();
   }
 });
+
+
+
+
+
+
+// import { commentDB } from './services/commentDB'
+
+
+// // 保存 token
+// commentDB.saveFeishuToken({
+//   token: 'AJDSAKJDAK',
+//   expire: 7200,
+//   fetchedAt: Date.now() // 毫秒级时间戳
+// })
+
+// // 添加一条评论
+// commentDB.addComment({
+//   userId: "123123123123123",
+//   userName: 'Alice',
+//   userType: 'VIP',
+//   timestamp: Date.now(),
+//   commentTime: new Date().toLocaleString(),
+//   content: '这个功能真棒！',
+//   reply: '谢谢你的反馈！'
+// })
