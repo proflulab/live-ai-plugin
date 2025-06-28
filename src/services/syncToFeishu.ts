@@ -1,4 +1,4 @@
-import { commentDB } from '../services/commentDB'
+import { commentDB } from './commentDB'
 
 
 
@@ -86,33 +86,44 @@ export class SyncToFeishu{
     }
 
 
-    public async syncRunningStateToFeishu() {
+    public async syncRunningStateToFeishu(feishuData: any) {
       
-      const tenantAccessToken = await this.getFeishuToken(process.env.PLASMO_PUBLIC_FEISHU_APP_ID, process.env.PLASMO_PUBLIC_FEISHU_APP_SECRET)
+      const appId = process.env.PLASMO_PUBLIC_FEISHU_APP_ID
+      const appSecret = process.env.PLASMO_PUBLIC_FEISHU_APP_SECRET
+      const tenantAccessToken = await this.getFeishuToken(appId, appSecret)
       console.log("拿到的 token =", tenantAccessToken)
-
-      const data = {
-        records: [
-          {
-            fields: {
-              文本: '文本内容',
-              人员: '123',
-            },
-          },
-          {
-            fields: {
-              文本: '文本内容2',
-              人员: '1234',
-            },
-          },
-        ],
-      };
 
       const appToken = process.env.PLASMO_PUBLIC_FEISHU_APP_TOKEN
       const table_id = process.env.PLASMO_PUBLIC_FEISHU_TABLE_ID
-      const respond = await this.createRecords(data, tenantAccessToken, appToken, table_id)
-      console.log('请求成功，返回数据:', respond);
+      const respond = await this.createRecords(feishuData, tenantAccessToken, appToken, table_id)
+      // 检测请求是否成功，打印返回内容
+      if (respond?.msg === "success" && respond?.code === 0) {
+        console.log("✅ 请求成功，飞书返回：", respond);
+      } else {
+        console.error("❌ 飞书返回异常：", respond);
+      }
       
     }
 
 }
+
+
+
+// // 飞书批量存储代码文件结构
+// const data = {
+//   records: [
+//     {
+//       fields: {
+//         文本: '文本内容',
+//         人员: '123',
+//       },
+//     },
+//     {
+//       fields: {
+//         文本: '文本内容2',
+//         人员: '1234',
+//       },
+//     },
+//   ],
+// };
+

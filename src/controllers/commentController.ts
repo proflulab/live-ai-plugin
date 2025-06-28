@@ -1,5 +1,8 @@
 import { commentDB } from '../services/commentDB'
+import { SyncToFeishu } from '../services/syncToFeishu'
 import { v4 as uuidv4 } from 'uuid'
+
+const syncToFeishu = new SyncToFeishu();
 
 interface CommentResult {
     type: string;
@@ -161,18 +164,8 @@ interface CommentResult {
                 this.currentCommentCount = result.newCurren ; // 更新当前评论总数
                 this.targetCommentCount = result.newTarget ; // 目标评论总数
 
-                // // 储存评论到数据库
-                // commentDB.addComment({
-                //   userId: uuidv4(),
-                //   userName: comment.username,
-                //   userType: comment.type,
-                //   timestamp: Date.now(),
-                //   commentTime: new Date().toLocaleString(),
-                //   content: comment.content,
-                //   reply: ''
-                // })
 
-                // 将 commentInfo 列表中每一行评论详细信息储存到数据库
+                // 将 commentInfo 列表中每一行评论详细信息储存到本地数据库
                 result.commentInfo.forEach(comment => {
                   commentDB.addComment({
                     userId: uuidv4(),
@@ -185,28 +178,30 @@ interface CommentResult {
                   });
                 });
 
+                // 初始化将要存储到飞书的数据结构
+                const feishuData = {
+                  records: result.commentInfo.map(comment => ({
+                    fields: {
+                      userId: uuidv4(),
+                      userName: comment.username,
+                      userType: comment.type,
+                      timestamp: Date.now(),
+                      commentTime: new Date().toLocaleString(),
+                      content: comment.content,
+                      reply: ''
+                    }
+                  }))
+                };
+
+                console.log("飞书数据库储存数据:", feishuData)
+
+                // 后台异步同步，不等待，不卡主流程
+                syncToFeishu.syncRunningStateToFeishu(feishuData)
+                  .catch(err => console.error("Feishu 数据同步失败:", err));
   
               }
             }
           });
-
-
-          // (async () => {
-          //   await new Promise(resolve => setTimeout(resolve, 10000));
-          //   console.log("1212121212");
-          // })();
-
-          // private canPrint = true; // 标志变量，用于控制打印
-
-          // // 使用标志控制打印
-          // if (this.canPrint) {
-          //   console.log("SyncToFeishu service is running");
-          //   this.canPrint = false;
-          //   setTimeout(() => {
-          //     this.canPrint = true;
-          //   }, 5000);
-          // }
-
 
   
           console.log("CommentController service is running");
