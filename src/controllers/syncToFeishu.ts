@@ -1,4 +1,4 @@
-
+import { commentDB } from '../services/commentDB'
 
 
 
@@ -15,6 +15,18 @@ export class SyncToFeishu{
      * @throws 若请求失败、网络错误或响应数据结构异常，会抛出错误
      */
     private async getFeishuToken(appId: string, appSecret: string): Promise<string> {
+      // 获取缓存在数据库中的飞书token
+      const cachedToken = await commentDB.getFeishuToken()
+      // 判断缓存是否有 token值，且未过期（当前时间小于获取时间 + 过期时间 - 10分钟误差时间）
+      if (
+        cachedToken?.token && 
+        Date.now() < cachedToken.fetchedAt + cachedToken.expire * 1000 - (10 * 60 * 1000)
+      ) {
+        console.log("使用缓存的 token")
+        return cachedToken.token;
+      }
+
+      // 请求飞书tenant_access_token
       const res = await fetch("https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal/", {
         method: "POST",
         headers: {
@@ -29,6 +41,14 @@ export class SyncToFeishu{
       const data = await res.json()
       //console.log("返回的完整数据 =", data)
       //console.log("tenant_access_token =", data.tenant_access_token)
+
+      // 保存 token 至本地数据库
+      commentDB.saveFeishuToken({
+        token: data.tenant_access_token,
+        expire: data.expire,
+        fetchedAt: Date.now() // 毫秒级时间戳
+      })
+
       return data.tenant_access_token
     }
   

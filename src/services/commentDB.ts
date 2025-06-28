@@ -119,5 +119,5 @@ export const commentDB = new CommentDB('MyDatabase')
 // commentDB.saveFeishuToken({
 //   token: 'AJDSAKJDAK',
 //   expire: 7200,
-//   fetchedAt: Math.floor(Date.now() / 1000) // 秒级时间戳
+//   fetchedAt: Date.now() // 毫秒级时间戳
 // })
