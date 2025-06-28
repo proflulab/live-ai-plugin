@@ -113,9 +113,10 @@ interface CommentResult {
                     // 检查当前检测的 data-index 是否大于目标值
                     if (dataIndex && Number(dataIndex) > target) {
                       // 返回包含类型、用户名和内容的对象
+                      // 用正则表达式删除username最后一个冒号
                       return {
                         type: view.querySelector('.message-type')?.textContent || '',
-                        username: view.querySelector('.message-username-desc')?.textContent || '',
+                        username: (view.querySelector('.message-username-desc')?.textContent || '').replace(/:$/, ''),
                         content: view.querySelector('.message-content')?.textContent || ''
                       };
                     }
