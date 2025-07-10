@@ -119,32 +119,35 @@ export default function SidePanel() {
             transition: "all 0.3s ease" // 逐渐显现
 
           }}
-          onMouseEnter={(e) => {
-            // 鼠标悬停时，增加阴影
-            e.currentTarget.style.boxShadow = "0 5px 20px 5px rgba(0, 0, 0, 0.3)"
+          onMouseEnter={(e) => { // 鼠标悬停时
+            // e.currentTarget.style.borderRadius = "20px"; // 更圆的角
+
           }}
 
-          onMouseLeave={(e) => {
-            // 鼠标移出时，恢复阴影
-            e.currentTarget.style.boxShadow = "0 5px 8px 5px rgba(0, 0, 0, 0.2)"
-          }}
-
-          onMouseDown={(e) => {
-            // 鼠标落下，按钮变暗
-            e.currentTarget.style.backgroundColor = isRunning ? "#d32f2f" : "#3d8b40";  // 变成对应属性的暗色
-            e.currentTarget.style.boxShadow = "0 2px 4px 2px rgba(0, 0, 0, 0.2)"  // 更小的阴影
-          }}
-
-          onMouseUp={(e) => {
-            // 鼠标抬起，按钮颜色恢复
+          onMouseLeave={(e) => { // 鼠标离开
+            // 按钮颜色恢复
             e.currentTarget.style.backgroundColor = isRunning ? "#f44336" : "#4CAF50"; // 回归默认颜色
+            e.currentTarget.style.transform = "scale(1.00)"; // 按钮大小恢复
+            e.currentTarget.style.borderRadius = "15px"; // 按钮圆角恢复
+          }}
 
-            // 检测鼠标是否移出了按钮
-            if (e.currentTarget.matches(':hover')) {
-              e.currentTarget.style.boxShadow = "0 5px 20px 5px rgba(0, 0, 0, 0.3)"
-            } else {
-              e.currentTarget.style.boxShadow = "0 5px 8px 5px rgba(0, 0, 0, 0.2)"
-            }
+          onMouseDown={(e) => { // 鼠标落下
+            // 按钮变暗
+            e.currentTarget.style.backgroundColor = isRunning ? "#d32f2f" : "#3d8b40";  // 变成对应属性的暗色
+            e.currentTarget.style.transform = "scale(0.95)"; // 按钮变小
+            e.currentTarget.style.borderRadius = "20px"; // 更圆的角
+
+          }}
+
+          onMouseUp={(e) => { // 鼠标抬起
+            // 按钮颜色恢复
+            e.currentTarget.style.backgroundColor = isRunning ? "#f44336" : "#4CAF50"; // 回归默认颜色
+            // 按钮大小恢复
+            e.currentTarget.style.transform = "scale(1.00)";
+
+            // 按钮圆角恢复
+            e.currentTarget.style.borderRadius = "15px";
+
           }}
 
           // onClick={() => {
@@ -154,7 +157,7 @@ export default function SidePanel() {
           // }}
 
 
-
+          
 
           onClick={toggleRunningState}
         >
