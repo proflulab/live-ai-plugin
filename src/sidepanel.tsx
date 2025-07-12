@@ -1,6 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function SidePanel() {
+  const [isRunning, setIsRunning] = useState(false); // "获取直播评论"的开关状态
+
+  // 这是调用函数，调用它可以发送切换"获取直播评论"程序的状态
+  const toggleRunningState = () => {
+    const newState = !isRunning; // 计算新的状态
+
+    // 发送消息给后台切换状态-开始获取评论
+    chrome.runtime.sendMessage({ type: "TOGGLE_RUNNING_STATE" });
+    // 本地缓存状态
+    chrome.storage.local.set({ isRunning: newState });
+    // 更新本地状态
+    setIsRunning(newState);
+  };
+
+
   // 使用 useEffect 钩子在组件挂载时设置消息监听器
   useEffect(() => {
     // 定义消息处理函数
@@ -11,6 +26,13 @@ export default function SidePanel() {
         return true; // 保持消息通道开启
       }
     };
+
+    // 从本地存储读取  获取评论 运行状态
+    chrome.storage.local.get(['isRunning'], (result) => {
+      if (typeof result.isRunning === 'boolean') {
+        setIsRunning(result.isRunning);
+      }
+    });
     
     // 添加消息监听器，监听来自 background.ts 的消息
     chrome.runtime.onMessage.addListener(handleMessage);
@@ -84,7 +106,7 @@ export default function SidePanel() {
         <button 
           style={{
             padding: "12px 24px",
-            backgroundColor: "#4CAF50",
+            backgroundColor: isRunning ? "#f44336" : "#4CAF50",
             color: "white",
             border: "none",
             borderRadius: "15px",
@@ -97,41 +119,49 @@ export default function SidePanel() {
             transition: "all 0.3s ease" // 逐渐显现
 
           }}
-          onMouseEnter={(e) => {
-            // 鼠标悬停时，增加阴影
-            e.currentTarget.style.boxShadow = "0 5px 20px 5px rgba(0, 0, 0, 0.3)"
+          onMouseEnter={(e) => { // 鼠标悬停时
+            // e.currentTarget.style.borderRadius = "20px"; // 更圆的角
+
           }}
 
-          onMouseLeave={(e) => {
-            // 鼠标移出时，恢复阴影
-            e.currentTarget.style.boxShadow = "0 5px 8px 5px rgba(0, 0, 0, 0.2)"
+          onMouseLeave={(e) => { // 鼠标离开
+            // 按钮颜色恢复
+            e.currentTarget.style.backgroundColor = isRunning ? "#f44336" : "#4CAF50"; // 回归默认颜色
+            e.currentTarget.style.transform = "scale(1.00)"; // 按钮大小恢复
+            e.currentTarget.style.borderRadius = "15px"; // 按钮圆角恢复
           }}
 
-          onMouseDown={(e) => {
-            // 鼠标落下，按钮变暗
-            e.currentTarget.style.backgroundColor = "#3d8b40"  // 变成暗绿色
-            e.currentTarget.style.boxShadow = "0 2px 4px 2px rgba(0, 0, 0, 0.2)"  // 更小的阴影
+          onMouseDown={(e) => { // 鼠标落下
+            // 按钮变暗
+            e.currentTarget.style.backgroundColor = isRunning ? "#d32f2f" : "#3d8b40";  // 变成对应属性的暗色
+            e.currentTarget.style.transform = "scale(0.95)"; // 按钮变小
+            e.currentTarget.style.borderRadius = "20px"; // 更圆的角
+
           }}
 
-          onMouseUp={(e) => {
-            // 鼠标抬起，按钮颜色恢复
-            e.currentTarget.style.backgroundColor = "#4CAF50" // 回归默认的绿色
+          onMouseUp={(e) => { // 鼠标抬起
+            // 按钮颜色恢复
+            e.currentTarget.style.backgroundColor = isRunning ? "#f44336" : "#4CAF50"; // 回归默认颜色
+            // 按钮大小恢复
+            e.currentTarget.style.transform = "scale(1.00)";
 
-            // 检测鼠标是否移出了按钮
-            if (e.currentTarget.matches(':hover')) {
-              e.currentTarget.style.boxShadow = "0 5px 20px 5px rgba(0, 0, 0, 0.3)"
-            } else {
-              e.currentTarget.style.boxShadow = "0 5px 8px 5px rgba(0, 0, 0, 0.2)"
-            }
+            // 按钮圆角恢复
+            e.currentTarget.style.borderRadius = "15px";
+
           }}
 
-          onClick={() => {
-            console.log("Start button clicked");
-            // 发送消息给 background.ts 以切换 获取直播间信息 运行状态(开始或者停止)
-            chrome.runtime.sendMessage({ type: "TOGGLE_RUNNING_STATE" });
-          }}
+          // onClick={() => {
+          //   console.log("Start button clicked");
+          //   // 发送消息给 background.ts 以切换 获取直播间信息 运行状态(开始或者停止)
+          //   chrome.runtime.sendMessage({ type: "TOGGLE_RUNNING_STATE" });
+          // }}
+
+
+          
+
+          onClick={toggleRunningState}
         >
-          START
+          {isRunning ? "STOP" : "START"}
         </button>
       </div>
     </div>

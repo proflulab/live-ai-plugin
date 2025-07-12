@@ -18,7 +18,7 @@ interface CommentResult {
   }
   
   export class CommentController {
-    private isRunning: boolean = false;
+    public isRunning: boolean = false;
     private intervalId: NodeJS.Timeout | null = null;
     private currentCommentCount: number = 0; // 时刻更新的总项目数
     private targetCommentCount: number = 0; // 程序推进到的存储的数量
