@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 
 export default function SidePanel() {
   const [isRunning, setIsRunning] = useState(false); // "获取直播评论"的开关状态
-  const [headlineText, setHeadlineText] = useState("从这里，听见观众的声音"); // 初始化标语显示中文
+  const [headlineText, setHeadlineText] = useState("从这里，听见观众的声音"); // 侧边栏标语，初始化标语显示中文
+  const [blurred, setBlurred] = useState(false); // 控制 侧边栏标语 模糊状态
 
   // 这是调用函数，调用它可以发送切换"获取直播评论"程序的状态
   const toggleRunningState = () => {
@@ -16,7 +17,7 @@ export default function SidePanel() {
     setIsRunning(newState);
   };
 
-  // 多语言轮播：中、英、日、韩
+  // 侧边栏标语，多语言轮播：中、英、日、韩
   useEffect(() => {
     const messages = [
       "从这里，听见观众的声音",                // 中文
@@ -26,15 +27,22 @@ export default function SidePanel() {
     ];
     let index = 0; // 初始化了索引为0，不是初始显示
     const interval = setInterval(() => {
-      // 1 % 4 = 1 （因为 1 ÷ 4 商 0 余 1）
-      // 2 % 4 = 2 （2 ÷ 4 商 0 余 2）
-      // 3 % 4 = 3 （3 ÷ 4 商 0 余 3）
-      // 4 % 4 = 0 （4 ÷ 4 商 1 余 0）开始新的循环了
-      // 5 % 4 = 1 （5 ÷ 4 商 1 余 1）
-      // 6 % 4 = 2 （6 ÷ 4 商 1 余 2）
-      index = (index + 1) % messages.length;
-      setHeadlineText(messages[index]); // 切换标题
-    }, 3000);
+      // 先触发模糊渐隐动画
+      setBlurred(true);
+
+      // 等800ms动画结束后，再进行文字切换
+      setTimeout(() => {
+        // 1 % 4 = 1 （因为 1 ÷ 4 商 0 余 1）
+        // 2 % 4 = 2 （2 ÷ 4 商 0 余 2）
+        // 3 % 4 = 3 （3 ÷ 4 商 0 余 3）
+        // 4 % 4 = 0 （4 ÷ 4 商 1 余 0）开始新的循环了
+        // 5 % 4 = 1 （5 ÷ 4 商 1 余 1）
+        // 6 % 4 = 2 （6 ÷ 4 商 1 余 2）
+        index = (index + 1) % messages.length;
+        setHeadlineText(messages[index]); // 切换标题
+        setBlurred(false); // 设置为非模糊状态
+      }, 800);
+    }, 5000);
 
     return () => clearInterval(interval); // 组件卸载时，清理它
   }, []);
@@ -75,16 +83,25 @@ export default function SidePanel() {
       
       {/* <h1>从这里，听见观众的声音</h1> */}
 
-      {/* 切换中英文的标题 */}
-      <h1 id="headline">{headlineText}</h1>
+      {/* 加入模糊和渐隐动画样式 */}
+      <h1
+        id="headline"
+        style={{
+          transition: "opacity 0.8s ease, filter 0.8s ease", // 效果持续0.8秒
+          opacity: blurred ? 0 : 1, // 透明度，0是完全透明，1是完全可见
+          filter: blurred ? "blur(4px)" : "blur(0)" // 模糊程度，4px是模糊，0是清晰
+        }}
+      >
+        {headlineText}
+      </h1>
 
 
 
 
 
-      <button onClick={() => alert("Hello from side panel!")}>
+      {/* <button onClick={() => alert("Hello from side panel!")}>
         Click Me
-      </button>
+      </button> */}
 
       {/* 开始按钮 */}
       <div style={{
