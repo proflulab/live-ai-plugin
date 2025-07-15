@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 export default function SidePanel() {
   const [isRunning, setIsRunning] = useState(false); // "获取直播评论"的开关状态
+  const [headlineText, setHeadlineText] = useState("从这里，听见观众的声音"); // 初始化标语显示中文
 
   // 这是调用函数，调用它可以发送切换"获取直播评论"程序的状态
   const toggleRunningState = () => {
@@ -14,6 +15,29 @@ export default function SidePanel() {
     // 更新本地状态
     setIsRunning(newState);
   };
+
+  // 多语言轮播：中、英、日、韩
+  useEffect(() => {
+    const messages = [
+      "从这里，听见观众的声音",                // 中文
+      "Hear the audience from here",            // English
+      "ここから、視聴者の声が聞こえる",         // 日本語
+      "여기서, 시청자의 목소리를 들어보세요",     // 한국어
+    ];
+    let index = 0; // 初始化了索引为0，不是初始显示
+    const interval = setInterval(() => {
+      // 1 % 4 = 1 （因为 1 ÷ 4 商 0 余 1）
+      // 2 % 4 = 2 （2 ÷ 4 商 0 余 2）
+      // 3 % 4 = 3 （3 ÷ 4 商 0 余 3）
+      // 4 % 4 = 0 （4 ÷ 4 商 1 余 0）开始新的循环了
+      // 5 % 4 = 1 （5 ÷ 4 商 1 余 1）
+      // 6 % 4 = 2 （6 ÷ 4 商 1 余 2）
+      index = (index + 1) % messages.length;
+      setHeadlineText(messages[index]); // 切换标题
+    }, 3000);
+
+    return () => clearInterval(interval); // 组件卸载时，清理它
+  }, []);
 
 
   // 使用 useEffect 钩子在组件挂载时设置消息监听器
@@ -49,41 +73,13 @@ export default function SidePanel() {
       paddingBottom: "200px", // 除去内容，增加底部空的部分
     }}>
       
-      <h1>Live AI Sidebar</h1>
+      {/* <h1>从这里，听见观众的声音</h1> */}
 
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>1</h1>
-      <h1>2</h1>
+      {/* 切换中英文的标题 */}
+      <h1 id="headline">{headlineText}</h1>
+
+
+
 
 
       <button onClick={() => alert("Hello from side panel!")}>
