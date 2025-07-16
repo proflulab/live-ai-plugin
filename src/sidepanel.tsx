@@ -1,9 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function SidePanel() {
   const [isRunning, setIsRunning] = useState(false); // "获取直播评论"的开关状态
   const [headlineText, setHeadlineText] = useState("从这里，听见观众的声音"); // 侧边栏标语，初始化标语显示中文
   const [blurred, setBlurred] = useState(false); // 控制 侧边栏标语 模糊状态
+
+  const [logs, setLogs] = useState<string[]>([]); // 日志列表状态
+  const logContainerRef = useRef<HTMLDivElement>(null); // 日志面板 DOM 引用，用于自动滚动
+
+  // ✅ 新增: 添加日志函数
+  const addLog = (text: string) => {
+    const time = new Date().toLocaleTimeString(); // 获取当前时间（只显示时分秒，例如 "14:23:10"）
+    setLogs((prev) => [...prev.slice(-100), `[${time}] ${text}`]); // 保留最近100条
+  };
+
+  // 当日志列表 logs 更新时，自动将日志面板滚动到底部
+  useEffect(() => {
+    // 检查日志容器是否存在
+    if (logContainerRef.current) {
+      // 将日志容器的滚动条位置设置为内容的总高度
+      // 意思是：滚动到底部，显示最新的一条日志
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+    }
+  }, [logs]); // ✅ 依赖项是 logs：只要日志发生变化，就会触发这个 useEffect
+
 
   // 这是调用函数，调用它可以发送切换"获取直播评论"程序的状态
   const toggleRunningState = () => {
@@ -15,6 +35,8 @@ export default function SidePanel() {
     chrome.storage.local.set({ isRunning: newState });
     // 更新本地状态
     setIsRunning(newState);
+
+    addLog(newState ? "开始获取评论" : "停止获取评论"); // 状态变更写入"终端"日志
   };
 
   // 侧边栏标语，多语言轮播：中、英、日、韩
@@ -57,6 +79,11 @@ export default function SidePanel() {
         sendResponse(true);
         return true; // 保持消息通道开启
       }
+
+      // 接收 background 发来的日志，并打印到侧边栏"终端"
+      if (message.type === "LOG" && message.text) {
+        addLog(message.text);
+      }
     };
 
     // 从本地存储读取  获取评论 运行状态
@@ -94,6 +121,32 @@ export default function SidePanel() {
       >
         {headlineText}
       </h1>
+
+
+      {/* ✅ 新增: 浅灰色日志终端区域 */}
+      <div
+        ref={logContainerRef}
+        style={{
+          marginTop: "24px",
+          backgroundColor: "#f5f5f5",         // ✅ 背景改为浅灰色
+          color: "#333",                      // ✅ 字体颜色改为深灰
+          fontFamily: "monospace",
+          fontSize: "13px",
+          padding: "10px",
+          borderRadius: "8px",
+          height: "200px",
+          overflowY: "auto",
+          whiteSpace: "pre-wrap",
+          boxShadow: "inset 0 0 4px rgba(0,0,0,0.1)", // ✅ 更柔和的内阴影
+          border: "1px solid #ccc",           // ✅ 边框改为浅灰色
+        }}
+      >
+        {logs.length === 0 ? (
+          <div style={{ opacity: 0.5 }}>终端就绪...</div>
+        ) : (
+          logs.map((line, idx) => <div key={idx}>{line}</div>)
+        )}
+      </div>
 
 
 
