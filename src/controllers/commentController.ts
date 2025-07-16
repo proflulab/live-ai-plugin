@@ -26,6 +26,12 @@ interface CommentResult {
     public toggleRunningState() {
       this.isRunning = !this.isRunning;
       console.log(`Customer service running state: ${this.isRunning}`);
+
+      // 发送运行状态到侧边栏"终端"
+      chrome.runtime.sendMessage({
+        type: "LOG",             // 类型是 LOG，对应 SidePanel 中 handleMessage 的判断
+        text: `Customer service running state: ${this.isRunning}`, 
+      });
   
       if (this.isRunning) {
         this.intervalId = setInterval(async () => {
@@ -40,11 +46,15 @@ interface CommentResult {
           // 如果没有找到直播页面，返回
           if (!liveTab) {
             console.log('Customer service ：未找到微信视频号直播页面');
+            // 发送运行状态到侧边栏"终端"
+            chrome.runtime.sendMessage({
+              type: "LOG",             // 类型是 LOG，对应 SidePanel 中 handleMessage 的判断
+              text: 'Customer service ：未找到微信视频号直播页面', 
+            });
             return;
           }
   
           console.log("Customer service ：找到直播页面，继续执行其他操作");
-          // 这里可以继续添加其他操作
   
           // 在页面中执行脚本获取评论数量和内容
           chrome.scripting.executeScript({
@@ -179,6 +189,15 @@ interface CommentResult {
                   });
                 });
 
+                // 将每个用户的评论打印到侧边栏"终端"
+                result.commentInfo.forEach(comment => {
+                  // 发送运行状态到侧边栏"终端"
+                  chrome.runtime.sendMessage({
+                    type: "LOG",             // 类型是 LOG，对应 SidePanel 中 handleMessage 的判断
+                    text: `用户名：${comment.username} | 用户类型：${comment.type} | 评论内容：${comment.content}`, 
+                  });
+                });
+
                 // 初始化将要存储到飞书的数据结构
                 const feishuData = {
                   records: result.commentInfo.map(comment => ({
@@ -196,9 +215,24 @@ interface CommentResult {
 
                 console.log("飞书数据库储存数据:", feishuData)
 
+                // 发送运行状态到侧边栏"终端"
+                chrome.runtime.sendMessage({
+                  type: "LOG",             // 类型是 LOG，对应 SidePanel 中 handleMessage 的判断
+                  text: `同步至飞书`, 
+                });
+
                 // 后台异步同步，不等待，不卡主流程
                 syncToFeishu.syncRunningStateToFeishu(feishuData)
-                  .catch(err => console.error("Feishu 数据同步失败:", err));
+                  // 抓取报错
+                  .catch(err => {
+                    console.error("Feishu 数据同步失败:", err)
+
+                    // 发送运行状态到侧边栏"终端"
+                    chrome.runtime.sendMessage({
+                      type: "LOG",             // 类型是 LOG，对应 SidePanel 中 handleMessage 的判断
+                      text: `同步至飞书失败：${err}`, 
+                    });
+                  });
   
               }
             }

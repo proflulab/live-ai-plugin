@@ -233,3 +233,10 @@ export default function SidePanel() {
     </div>
   )
 }
+
+
+// 调用方式：添加一条信息至侧边栏"终端"
+// chrome.runtime.sendMessage({
+//   type: "LOG",             // 类型是 LOG，对应 SidePanel 中 handleMessage 的判断
+//   text: "正在获取直播间评论...", // 你想显示在侧边栏终端的文本
+// });
