@@ -8,10 +8,16 @@ export default function SidePanel() {
   const [logs, setLogs] = useState<string[]>([]); // 日志列表状态
   const logContainerRef = useRef<HTMLDivElement>(null); // 日志面板 DOM 引用，用于自动滚动
 
-  // ✅ 新增: 添加日志函数
+  // 添加日志函数
   const addLog = (text: string) => {
     const time = new Date().toLocaleTimeString(); // 获取当前时间（只显示时分秒，例如 "14:23:10"）
-    setLogs((prev) => [...prev.slice(-100), `[${time}] ${text}`]); // 保留最近100条
+    const newLogs = `[${time}] ${text}`; // 时间 + 日志内容
+    // 用函数式 setLogs，确保并发状态下不会丢日志
+    setLogs((prevLogs) => {
+      const updatedLogs = [...prevLogs.slice(-99), newLogs]; // 保留最多100条
+      chrome.storage.local.set({ sidepanelLogs: updatedLogs }); // 同步写入本地 storage
+      return updatedLogs; // 最后返回最新的日志列表，用于更新状态
+    });
   };
 
   // 当日志列表 logs 更新时，自动将日志面板滚动到底部
@@ -92,6 +98,13 @@ export default function SidePanel() {
         setIsRunning(result.isRunning);
       }
     });
+
+    // 读取本地存储的日志，初始化日志列表状态 - 侧边栏"终端"
+    chrome.storage.local.get(['sidepanelLogs'], (result) => {
+      if (result.sidepanelLogs && Array.isArray(result.sidepanelLogs)) {
+        setLogs(result.sidepanelLogs);
+      }
+    });
     
     // 添加消息监听器，监听来自 background.ts 的消息
     chrome.runtime.onMessage.addListener(handleMessage);
@@ -134,7 +147,7 @@ export default function SidePanel() {
           fontSize: "13px",
           padding: "10px",
           borderRadius: "8px",
-          height: "200px",
+          height: "50vh",     // 高度改为50vh，即视口高度的50%
           overflowY: "auto",
           whiteSpace: "pre-wrap",
           boxShadow: "inset 0 0 4px rgba(0,0,0,0.1)", // ✅ 更柔和的内阴影
