@@ -1,4 +1,6 @@
 import { useEffect, useState, useRef } from "react";
+import { commentDB } from "./services/commentDB"
+import type { Comment } from "./services/commentDB"
 
 export default function SidePanel() {
   const [isRunning, setIsRunning] = useState(false); // "获取直播评论"的开关状态
@@ -7,6 +9,10 @@ export default function SidePanel() {
 
   const [logs, setLogs] = useState<string[]>([]); // 日志列表状态
   const logContainerRef = useRef<HTMLDivElement>(null); // 日志面板 DOM 引用，用于自动滚动
+
+  // "直播间评论"列表和评论容器引用
+  const [comments, setComments] = useState<Comment[]>([]); // 存储从IndexedDB读取的评论
+  const commentContainerRef = useRef<HTMLDivElement>(null); // 评论显示区域引用，用于滚动
 
   // 添加日志函数
   const addLog = (text: string) => {
@@ -29,6 +35,36 @@ export default function SidePanel() {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [logs]); // ✅ 依赖项是 logs：只要日志发生变化，就会触发这个 useEffect
+
+
+  // 定时从数据库获取评论，并更新状态
+  useEffect(() => {
+    // 定义函数：从数据库获取评论
+    const fetchComments = async () => {
+      try {
+        const allComments = await commentDB.getAllComments(); // 获取本地数据库所有评论
+        setComments(allComments); // 更新侧边栏评论列表状态
+      } catch (error) {
+        console.error("读取评论失败", error);
+      }
+    };
+
+    // 执行函数获取评论
+    fetchComments();
+
+    const interval = setInterval(fetchComments, 3000); // 每3秒刷新评论列表
+
+    return () => clearInterval(interval); // 组件卸载时清理定时器
+  }, []);
+
+  // "直播间评论"列表更新时自动滚动到底部
+  useEffect(() => {
+    if (commentContainerRef.current) {
+      // 滚动到底部，显示最新的一条评论
+      commentContainerRef.current.scrollTop = commentContainerRef.current.scrollHeight;
+    }
+  }, [comments]);
+
 
 
   // 这是调用函数，调用它可以发送切换"获取直播评论"程序的状态
@@ -134,6 +170,56 @@ export default function SidePanel() {
       >
         {headlineText}
       </h1>
+
+
+      {/* ===== 新增评论显示区 ===== */}
+      <h2 style={{ marginTop: "24px" }}>观众评论</h2>
+      
+      {/* 评论显示区域容器 */}
+      <div
+        ref={commentContainerRef} // 用于获取DOM元素，方便后续控制滚动
+        style={{
+          backgroundColor: "#f0f0f0",
+          padding: "10px",
+          borderRadius: "8px",
+          maxHeight: "200px",
+          overflowY: "auto",
+          fontSize: "13px",
+          whiteSpace: "pre-wrap",
+          border: "1px solid #ccc",
+          boxShadow: "inset 0 0 4px rgba(0,0,0,0.1)",
+        }}
+      >
+        {/* 如果评论列表为空，显示提示文字 */}
+        {comments.length === 0 ? (
+          <div style={{ opacity: 0.6 }}>暂无评论</div>
+        ) : (
+          /* 否则遍历 comments 数组，逐条显示每条评论 */
+          comments.map((c, idx) => (
+            <div key={idx} style={{ marginBottom: "10px" }}>
+              {/* 评论用户名和用户类型 */}
+              <div><strong>{c.userName}</strong>（{c.userType}）</div>
+
+              {/* 评论时间，字体颜色变浅 */}
+              <div style={{ color: "#666" }}>{c.commentTime}</div>
+
+              {/* 评论正文内容 */}
+              <div>{c.content}</div>
+
+              {/* 如果有回复内容，则显示回复，字体颜色为青色，且上方有一点间距 */}
+              {/* && 运算符的含义：如果 c.reply 存在（有值），则执行后面的代码 */}
+              {c.reply && (
+                <div style={{ color: "#008080", marginTop: "4px" }}>
+                  ↪️ 回复：{c.reply}
+                </div>
+              )}
+
+              {/* 每条评论底部的分割线，颜色浅，边距上下8px */}
+              <hr style={{ border: "none", borderTop: "1px solid #ddd", margin: "8px 0" }} />
+            </div>
+          ))
+        )}
+      </div>
 
 
       {/* ✅ 新增: 浅灰色日志终端区域 */}

@@ -189,15 +189,6 @@ interface CommentResult {
                   });
                 });
 
-                // 将每个用户的评论打印到侧边栏"终端"
-                result.commentInfo.forEach(comment => {
-                  // 发送运行状态到侧边栏"终端"
-                  chrome.runtime.sendMessage({
-                    type: "LOG",             // 类型是 LOG，对应 SidePanel 中 handleMessage 的判断
-                    text: `用户名：${comment.username} | 用户类型：${comment.type} | 评论内容：${comment.content}`, 
-                  });
-                });
-
                 // 初始化将要存储到飞书的数据结构
                 const feishuData = {
                   records: result.commentInfo.map(comment => ({
@@ -214,12 +205,6 @@ interface CommentResult {
                 };
 
                 console.log("飞书数据库储存数据:", feishuData)
-
-                // 发送运行状态到侧边栏"终端"
-                chrome.runtime.sendMessage({
-                  type: "LOG",             // 类型是 LOG，对应 SidePanel 中 handleMessage 的判断
-                  text: `同步至飞书`, 
-                });
 
                 // 后台异步同步，不等待，不卡主流程
                 syncToFeishu.syncRunningStateToFeishu(feishuData)
